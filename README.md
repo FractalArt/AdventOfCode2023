@@ -4,9 +4,9 @@ My solutions to the [AOC 2023](https://adventofcode.com/2023) problems in [Rust]
 
 ## Solutions
 
-| Task | Status |  
-| ---- | :----: |  
-| Day 1 | :heavy_check_mark: - :heavy_check_mark: |  
+| Day  | Task 1 | Task 2  |
+| ---: | :----: | :-----: | 
+|  1 | :heavy_check_mark: | :heavy_check_mark: |  
 
 ***
 
