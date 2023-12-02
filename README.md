@@ -7,6 +7,7 @@ My solutions to the [AOC 2023](https://adventofcode.com/2023) problems in [Rust]
 | Day  | Task 1 | Task 2  |
 | ---: | :----: | :-----: | 
 |  1 | :heavy_check_mark: | :heavy_check_mark: |  
+|  2 | :heavy_check_mark: | :heavy_check_mark: |  
 
 ***
 
