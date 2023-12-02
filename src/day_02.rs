@@ -2,8 +2,7 @@
 //!
 //! This module contains the solution of the [second day's challenges](https://adventofcode.com/2023/day/s).
 
-/// The solution to task 1 of day 1.
-pub fn day_02_1(data: &[String], r_max: usize, g_max: usize, b_max: usize) -> usize {
+fn helper(data: &[String]) -> impl Iterator<Item = (usize, usize, usize)> + '_ {
     data.iter()
         .map(|s| s.split(':').nth(1).unwrap().trim())
         .map(|game| {
@@ -25,6 +24,11 @@ pub fn day_02_1(data: &[String], r_max: usize, g_max: usize, b_max: usize) -> us
                 _ => acc,
             })
         })
+}
+
+/// The solution to task 1 of day 1.
+pub fn day_02_1(data: &[String], r_max: usize, g_max: usize, b_max: usize) -> usize {
+    helper(data)
         .enumerate()
         .filter_map(|(game, (r, g, b))| {
             if r > r_max || g > g_max || b > b_max {
@@ -38,29 +42,7 @@ pub fn day_02_1(data: &[String], r_max: usize, g_max: usize, b_max: usize) -> us
 
 /// The solution to task 2 of day 1.
 pub fn day_02_2(data: &[String]) -> usize {
-    data.iter()
-        .map(|s| s.split(':').nth(1).unwrap().trim())
-        .map(|game| {
-            game.split(';').flat_map(|draw| {
-                draw.split(',').map(|x| {
-                    let mut count_color = x.split_whitespace();
-                    (
-                        count_color.next().unwrap().parse::<usize>().unwrap(),
-                        count_color.next().unwrap(),
-                    )
-                })
-            })
-        })
-        .map(|game| {
-            game.fold((0, 0, 0), |acc, (count, col)| match col {
-                "red" if count > acc.0 => (count, acc.1, acc.2),
-                "green" if count > acc.1 => (acc.0, count, acc.2),
-                "blue" if count > acc.2 => (acc.0, acc.1, count),
-                _ => acc,
-            })
-        })
-        .map(|(r, g, b)| r * g * b)
-        .sum()
+    helper(data).map(|(r, g, b)| r * g * b).sum()
 }
 
 #[cfg(test)]
