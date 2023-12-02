@@ -8,11 +8,8 @@ fn helper(data: &[String]) -> impl Iterator<Item = (usize, usize, usize)> + '_ {
         .map(|game| {
             game.split(';').flat_map(|draw| {
                 draw.split(',').map(|x| {
-                    let mut count_color = x.split_whitespace();
-                    (
-                        count_color.next().unwrap().parse::<usize>().unwrap(),
-                        count_color.next().unwrap(),
-                    )
+                    let split = x.split_whitespace().collect::<Vec<_>>();
+                    (split[0].parse::<usize>().unwrap(), split[1])
                 })
             })
         })
