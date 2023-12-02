@@ -20,5 +20,11 @@ For each day, there is an integration test, named for example `day_01.rs` in the
 To run the tests for a specific day, run for example
 
 ```sh
-cargo t --release --test day_01
+> cargo t --release --test day_01
+```
+
+All the puzzle answers can be shown by running the code in `src/main.rs` through:
+
+```sh
+> cargo r --release
 ```
