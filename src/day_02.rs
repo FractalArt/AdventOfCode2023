@@ -1,6 +1,6 @@
 //! # Advent of Code 2023 - Day 2
 //!
-//! This module contains the solution of the [second day's challenges](https://adventofcode.com/2023/day/s).
+//! This module contains the solution of the [second day's challenges](https://adventofcode.com/2023/day/2).
 
 fn helper(data: &[String]) -> impl Iterator<Item = (usize, usize, usize)> + '_ {
     data.iter()
