@@ -1,171 +1,80 @@
 //! # Advent of Code 2023 - Day 3
 //!
 //! This module contains the solution of the [third day's challenges](https://adventofcode.com/2023/day/3).
+use regex::Regex;
 use std::collections::{HashMap as HM, HashSet as HS};
+
+type Symbols = HM<(usize, usize), char>;
+
+struct Number {
+    value: u64,
+    adjacents: HS<(usize, usize)>,
+}
+
+impl Number {
+    fn new(value: u64, start: (usize, usize), end: (usize, usize)) -> Self {
+        let sxs = if start.0 == 0 { 0 } else { start.0 - 1 };
+        let sys = if start.1 == 0 { 0 } else { start.1 - 1 };
+        let adjacents: HS<(usize, usize)> = (sxs..=end.0)
+            .flat_map(|x| (sys..=end.1 + 1).map(move |y| (x, y)))
+            .collect();
+        Self { value, adjacents }
+    }
+
+    fn is_adjacent(&self, target: (usize, usize)) -> bool {
+        self.adjacents.contains(&target)
+    }
+}
+
+fn parse_engine_schematic(data: &[String]) -> (Symbols, Vec<Number>) {
+    let mut numbers = vec![];
+    let mut symbols: Symbols = HM::new();
+
+    for (y, line) in data.iter().enumerate() {
+        // parse numbers
+        Regex::new(r"(\d+)").unwrap().find_iter(line).for_each(|m| {
+            numbers.push(Number::new(
+                m.as_str().parse::<u64>().unwrap(),
+                (m.start(), y),
+                (m.end(), y),
+            ));
+        });
+
+        line.chars()
+            .enumerate()
+            .filter(|(_, c)| !(c.is_ascii_digit() || c == &'.'))
+            .for_each(|(x, c)| {
+                symbols.insert((x, y), c);
+            });
+    }
+
+    (symbols, numbers)
+}
 
 /// The solution to task 1 of day 3.
 pub fn day_03_1(data: &[String]) -> u64 {
-    let mut numbers = vec![];
-    let mut symbols: HS<(usize, usize)> = HS::new();
-    let mut parsing_number = false;
-    let mut number_start = (0, 0);
-    let mut number_candidate = vec![];
-    for (y, line) in data.iter().enumerate() {
-        for (x, c) in line.chars().enumerate() {
-            // check if we are parsing a nunmber
-            if c.is_ascii_digit() {
-                if !parsing_number {
-                    number_start = (x, y);
-                    parsing_number = true;
-                    number_candidate.push(c.to_string().parse::<u64>().unwrap());
-                } else {
-                    number_candidate.push(c.to_string().parse::<u64>().unwrap());
-                }
-                if x == data[0].len() - 1 {
-                    // finish the number parsing
-                    parsing_number = false;
-                    let number_end = (x, y);
-                    let number: u64 = number_candidate
-                        .iter()
-                        .rev()
-                        .enumerate()
-                        .map(|(p, x)| x * 10u64.pow(p as u32))
-                        .sum();
-                    if number > 0 {
-                        numbers.push((number, number_start, number_end));
-                    }
-                    number_candidate = vec![];
-                }
-            } else if parsing_number || x == data[0].len() - 1 {
-                // finish the number parsing
-                parsing_number = false;
-                let number_end = (x, y);
-                let number: u64 = number_candidate
-                    .iter()
-                    .rev()
-                    .enumerate()
-                    .map(|(p, x)| x * 10u64.pow(p as u32))
-                    .sum();
-                if number > 0 {
-                    numbers.push((number, number_start, number_end));
-                }
-                number_candidate = vec![];
-                // parse the actual symbol
-                if c == '.' {
-                    continue;
-                } else {
-                    symbols.insert((x, y));
-                }
-            } else if c == '.' {
-                continue;
-            } else {
-                symbols.insert((x, y));
-            }
-        }
-    }
-
-    // now find adjacent
+    let (symbols, numbers) = parse_engine_schematic(data);
     numbers
         .into_iter()
-        .filter_map(|(n, (sx, sy), (ex, ey))| {
-            let mut targets: HS<(usize, usize)> = HS::new();
-            let sxs = if sx == 0 { 0 } else { sx - 1 };
-            let sys = if sy == 0 { 0 } else { sy - 1 };
-            for x in sxs..=ex {
-                for y in sys..=ey + 1 {
-                    targets.insert((x, y));
-                }
-            }
-            if symbols.intersection(&targets).count() > 0 {
-                Some(n)
-            } else {
-                None
-            }
-        })
+        .filter(|n| symbols.keys().any(|k| n.is_adjacent(*k)))
+        .map(|n| n.value)
         .sum()
 }
 
 /// The solution to task 2 of day 3.
 pub fn day_03_2(data: &[String]) -> u64 {
-    let mut numbers = vec![];
-    let mut symbols: HS<(usize, usize)> = HS::new();
-    let mut parsing_number = false;
-    let mut number_start = (0, 0);
-    let mut number_candidate = vec![];
-    for (y, line) in data.iter().enumerate() {
-        for (x, c) in line.chars().enumerate() {
-            // check if we are parsing a nunmber
-            if c.is_ascii_digit() {
-                if !parsing_number {
-                    number_start = (x, y);
-                    parsing_number = true;
-                    number_candidate.push(c.to_string().parse::<u64>().unwrap());
-                } else {
-                    number_candidate.push(c.to_string().parse::<u64>().unwrap());
-                }
-                if x == data[0].len() - 1 {
-                    // finish the number parsing
-                    parsing_number = false;
-                    let number_end = (x, y);
-                    let number: u64 = number_candidate
-                        .iter()
-                        .rev()
-                        .enumerate()
-                        .map(|(p, x)| x * 10u64.pow(p as u32))
-                        .sum();
-                    if number > 0 {
-                        numbers.push((number, number_start, number_end));
-                    }
-                    number_candidate = vec![];
-                }
-            } else if parsing_number || x == data[0].len() - 1 {
-                // finish the number parsing
-                parsing_number = false;
-                let number_end = (x, y);
-                let number: u64 = number_candidate
-                    .iter()
-                    .rev()
-                    .enumerate()
-                    .map(|(p, x)| x * 10u64.pow(p as u32))
-                    .sum();
-                if number > 0 {
-                    numbers.push((number, number_start, number_end));
-                }
-                number_candidate = vec![];
-                // parse the actual symbol
-                if c == '*' {
-                    symbols.insert((x, y));
-                } else {
-                    continue;
-                }
-            } else if c == '*' {
-                symbols.insert((x, y));
-            } else {
-                continue;
-            }
-        }
-    }
-
-    let mut sym_map: HM<(usize, usize), Vec<u64>> = HM::new();
-    numbers.into_iter().for_each(|(n, (sx, sy), (ex, ey))| {
-        let mut targets: HS<(usize, usize)> = HS::new();
-        let sxs = if sx == 0 { 0 } else { sx - 1 };
-        let sys = if sy == 0 { 0 } else { sy - 1 };
-        for x in sxs..=ex {
-            for y in sys..=ey + 1 {
-                targets.insert((x, y));
-            }
-        }
-        symbols
-            .intersection(&targets)
-            .for_each(|coord| sym_map.entry(*coord).or_default().push(n));
-    });
-
-    sym_map
+    let (symbols, numbers) = parse_engine_schematic(data);
+    symbols
         .into_iter()
-        .filter_map(|(_, v)| {
-            if v.len() == 2 {
-                Some(v.iter().product::<u64>())
+        .filter(|(_, v)| v == &'*')
+        .filter_map(|(k, _)| {
+            let adjacents = numbers
+                .iter()
+                .filter(|n| n.is_adjacent(k))
+                .map(|n| n.value)
+                .collect::<Vec<_>>();
+            if adjacents.len() == 2 {
+                Some(adjacents.iter().product::<u64>())
             } else {
                 None
             }
@@ -208,7 +117,6 @@ mod tests {
             "...$.*....".to_string(),
             ".664.598..".to_string(),
         ];
-
         assert_eq!(day_03_2(&data), 467835);
     }
 }
