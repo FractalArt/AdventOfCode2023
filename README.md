@@ -10,6 +10,7 @@ My solutions to the [AOC 2023](https://adventofcode.com/2023) problems in [Rust]
 |  2 | :heavy_check_mark: | :heavy_check_mark: |  
 |  3 | :heavy_check_mark: | :heavy_check_mark: |  
 |  4 | :heavy_check_mark: | :heavy_check_mark: |  
+|  5 | :heavy_check_mark: | :x: |  
 
 ***
 
