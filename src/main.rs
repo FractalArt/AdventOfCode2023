@@ -33,4 +33,9 @@ fn main() {
     let data_06 = read_data::<String, _>("data/day_06.txt").unwrap();
     println!("[Day 06 - Task 1]: {}", aoc2023::day_06::day_06_1(&data_06));
     println!("[Day 06 - Task 2]: {}", aoc2023::day_06::day_06_2(&data_06));
+
+    // day 07
+    let data_07 = read_data::<String, _>("data/day_07.txt").unwrap();
+    println!("[Day 07 - Task 1]: {}", aoc2023::day_07::day_07_1(&data_07));
+    //println!("[Day 07 - Task 2]: {}", aoc2023::day_07::day_07_2(&data_07));
 }
