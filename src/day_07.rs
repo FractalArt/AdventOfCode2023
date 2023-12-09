@@ -27,46 +27,35 @@ impl Hand {
                 c => c.to_string().parse().unwrap(),
             })
             .collect();
-        let counts: HM<usize, usize> = hand.iter().fold(HM::new(), |mut state, c| {
-            *state.entry(*c).or_insert(0) += 1;
-            state
-        });
 
-        let counts_v: Vec<usize> = counts
+        let counts: Vec<usize> = hand
             .iter()
-            //.into_values()
+            .fold(HM::new(), |mut state, c| {
+                *state.entry(*c).or_insert(0) += 1;
+                state
+            })
+            .iter()
             .map(|(_, &v)| v)
             .sorted()
             .rev()
-            //.sorted_by(|(x1, c1), (x2, c2)| Ord::cmp(c1, c2))
             .collect();
 
-        let joker_count = if jokers {
-            if let Some(c) = counts.get(&1) {
-                *c
-            } else {
-                0
-            }
-        } else {
-            0
-        };
-
+        let joker_count = hand.iter().filter(|&x| x == &1).count();
         let strength = match (counts.len(), joker_count) {
-            // five of a kind
-            (1, _) => 7,
+            (1, _) => 7, // five of a kind
             // four of a kind
-            (2, 0) if counts_v[0] == 4 => 6,
-            (2, _) if counts_v[0] == 4 => 7,
+            (2, 0) if counts[0] == 4 => 6,
+            (2, _) if counts[0] == 4 => 7,
             // full house
-            (2, 0) if counts_v[0] == 3 && counts_v[1] == 2 => 5,
-            (2, _) if counts_v[0] == 3 && counts_v[1] == 2 => 7,
+            (2, 0) if counts[0] == 3 && counts[1] == 2 => 5,
+            (2, _) if counts[0] == 3 && counts[1] == 2 => 7,
             // three of a kind
-            (3, 0) if counts_v[0] == 3 => 4,
-            (3, _) if counts_v[0] == 3 => 6,
+            (3, 0) if counts[0] == 3 => 4,
+            (3, _) if counts[0] == 3 => 6,
             // two pair
-            (3, 0) if counts_v[0] == 2 && counts_v[1] == 2 => 3,
-            (3, 1) if counts_v[0] == 2 && counts_v[1] == 2 => 5,
-            (3, 2) if counts_v[0] == 2 && counts_v[1] == 2 => 6,
+            (3, 0) if counts[0] == 2 && counts[1] == 2 => 3,
+            (3, 1) if counts[0] == 2 && counts[1] == 2 => 5,
+            (3, 2) if counts[0] == 2 && counts[1] == 2 => 6,
             // one pair
             (4, 0) => 2,
             (4, _) => 4,
