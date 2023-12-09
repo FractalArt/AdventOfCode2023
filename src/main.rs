@@ -48,11 +48,10 @@ fn main() {
     // day 08
     let data_08 = read_data::<String, _>("data/day_08.txt").unwrap();
     println!("[Day 08 - Task 1]: {}", aoc2023::day_08::day_08_1(&data_08));
-    println!("[Day 08 - Task 2]: --- TODO"); //, aoc2023::day_08::day_08_2(&data_08));
+    println!("[Day 08 - Task 2]: {}", aoc2023::day_08::day_08_2(&data_08));
 
     // day 09
     let data_09 = read_data::<String, _>("data/day_09.txt").unwrap();
-    //let data_09 = ["3 10 23 46 99 234 563 1310 2904 6131 12351 23745 43470 75464 123501 189097 268370 349700 418439 484617 669380".to_string()];
     println!("[Day 09 - Task 1]: {}", aoc2023::day_09::day_09_1(&data_09));
     println!("[Day 09 - Task 2]: {}", aoc2023::day_09::day_09_2(&data_09));
 }
