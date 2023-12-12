@@ -85,7 +85,6 @@ fn parse_grid(data: &[String]) -> ((usize, usize), Vec<Vec<char>>) {
     let grid = data
         .iter()
         .enumerate()
-        // the lines
         .map(|(y, line)| {
             line.trim()
                 .chars()
@@ -109,16 +108,10 @@ pub fn day_10_1(data: &[String]) -> usize {
 
     (1..)
         .scan((next1, next2), |(n1, n2), _| {
-            *n1 = Pipe {
-                symbol: grid[n1.next().1][n1.next().0],
-                coord: n1.next(),
-                prev: n1.coord,
-            };
-            *n2 = Pipe {
-                symbol: grid[n2.next().1][n2.next().0],
-                coord: n2.next(),
-                prev: n2.coord,
-            };
+            let next1 = n1.next();
+            let next2 = n2.next();
+            *n1 = Pipe::new(grid[next1.1][next1.0], next1, n1.coord);
+            *n2 = Pipe::new(grid[next2.1][next2.0], next2, n2.coord);
             if n1.coord == n2.coord {
                 None
             } else {
@@ -135,37 +128,27 @@ pub fn day_10_2(data: &[String]) -> usize {
     let (s, next1, _) = get_start_pos(start, &grid);
     grid[start.1][start.0] = s;
     let mut contour = [start].into_iter().collect::<HS<_>>();
-    let mut contour_v = vec![];
     let mut current = next1;
     while current.coord != start {
         contour.insert(current.coord);
-        contour_v.push(current.coord);
         let (x, y) = current.next();
-        current = Pipe {
-            symbol: grid[y][x],
-            coord: (x, y),
-            prev: current.coord,
-        };
+        current = Pipe::new(grid[y][x], (x, y), current.coord);
     }
 
-    grid.iter().enumerate().fold(0, |mut count, (y, _)| {
-        for x in 0..grid[y].len() {
-            if contour.contains(&(x, y)) {
-                continue;
-            }
-            if (x + 1..grid[y].len())
+    grid.iter()
+        .enumerate()
+        .flat_map(|(y, _)| (0..grid[y].len()).map(move |x| (x, y)))
+        .filter(|(x, y)| !contour.contains(&(*x, *y)))
+        .filter(|(x, y)| {
+            (x + 1..grid[*y].len())
                 .filter(|xx| {
-                    contour.contains(&(*xx, y)) && ['S', 'L', 'J', '|'].contains(&grid[y][*xx])
+                    contour.contains(&(*xx, *y)) && ['L', 'J', '|'].contains(&grid[*y][*xx])
                 })
                 .count()
                 % 2
                 == 1
-            {
-                count += 1;
-            }
-        }
-        count
-    })
+        })
+        .count()
 }
 
 #[cfg(test)]
