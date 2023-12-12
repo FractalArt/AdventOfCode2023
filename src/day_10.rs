@@ -11,6 +11,14 @@ struct Pipe {
 }
 
 impl Pipe {
+    fn new(symbol: char, coord: (usize, usize), prev: (usize, usize)) -> Self {
+        Self {
+            symbol,
+            coord,
+            prev,
+        }
+    }
+
     fn next(&self) -> (usize, usize) {
         match (
             self.symbol,
@@ -28,48 +36,48 @@ impl Pipe {
             ('|', 0, 1) => (self.coord.0, self.coord.1 + 1),
             ('|', 0, -1) => (self.coord.0, self.coord.1 - 1),
             ('-', 1, 0) => (self.coord.0 + 1, self.coord.1),
-            ('-', -1, 0) => (self.coord.0 - 1, self.coord.1),
-            _ => panic!("Wrong"),
+            (_, _, _) => (self.coord.0 - 1, self.coord.1),
         }
     }
 }
 
-fn get_start_pos(start: (usize, usize), grid: &[Vec<char>]) -> (Pipe, Pipe) {
+fn get_start_pos(start: (usize, usize), grid: &[Vec<char>]) -> (char, Pipe, Pipe) {
     let left = grid[start.1][start.0 - 1];
     let right = grid[start.1][start.0 + 1];
     let up = grid[start.1 - 1][start.0];
     let down = grid[start.1 + 1][start.0];
-    let mut ret = vec![];
-    if ['L', 'F', '-'].contains(&left) {
-        ret.push(Pipe {
-            symbol: left,
-            coord: (start.0 - 1, start.1),
-            prev: start,
-        });
+    match (left, right, up, down) {
+        (_, _, u, d) if ['L', '|', 'J'].contains(&d) && ['|', '7', 'F'].contains(&u) => (
+            '|',
+            Pipe::new(u, (start.0, start.1 - 1), start),
+            Pipe::new(d, (start.0, start.1 + 1), start),
+        ),
+        (l, r, _, _) if ['L', 'F', '-'].contains(&l) && ['7', 'J', '-'].contains(&r) => (
+            '-',
+            Pipe::new(l, (start.0 - 1, start.1), start),
+            Pipe::new(r, (start.0 + 1, start.1), start),
+        ),
+        (l, _, u, _) if ['L', 'F', '-'].contains(&l) && ['7', 'F', '|'].contains(&u) => (
+            'J',
+            Pipe::new(l, (start.0 - 1, start.1), start),
+            Pipe::new(u, (start.0, start.1 - 1), start),
+        ),
+        (l, _, _, d) if ['L', 'F', '-'].contains(&l) && ['L', 'J', '|'].contains(&d) => (
+            '7',
+            Pipe::new(l, (start.0 - 1, start.1), start),
+            Pipe::new(d, (start.0, start.1 + 1), start),
+        ),
+        (_, r, u, _) if ['7', 'J', '-'].contains(&r) && ['7', 'F', '|'].contains(&u) => (
+            'L',
+            Pipe::new(r, (start.0 + 1, start.1), start),
+            Pipe::new(u, (start.0, start.1 - 1), start),
+        ),
+        (_, r, _, d) => (
+            'F',
+            Pipe::new(r, (start.0 + 1, start.1), start),
+            Pipe::new(d, (start.0, start.1 + 1), start),
+        ),
     }
-    if ['7', 'J', '-'].contains(&right) {
-        ret.push(Pipe {
-            symbol: right,
-            coord: (start.0 + 1, start.1),
-            prev: start,
-        });
-    }
-    if ['|', 'F', '7'].contains(&up) {
-        ret.push(Pipe {
-            symbol: up,
-            coord: (start.0, start.1 - 1),
-            prev: start,
-        });
-    }
-    if ['|', 'J', 'L'].contains(&down) {
-        ret.push(Pipe {
-            symbol: down,
-            coord: (start.0, start.1 + 1),
-            prev: start,
-        });
-    }
-
-    (ret[0].clone(), ret[1].clone())
 }
 
 fn parse_grid(data: &[String]) -> ((usize, usize), Vec<Vec<char>>) {
@@ -97,7 +105,7 @@ fn parse_grid(data: &[String]) -> ((usize, usize), Vec<Vec<char>>) {
 /// The solution to task 1 of day 10.
 pub fn day_10_1(data: &[String]) -> usize {
     let (start, grid) = parse_grid(data);
-    let (next1, next2) = get_start_pos(start, &grid);
+    let (_, next1, next2) = get_start_pos(start, &grid);
 
     (1..)
         .scan((next1, next2), |(n1, n2), _| {
@@ -123,8 +131,9 @@ pub fn day_10_1(data: &[String]) -> usize {
 
 /// The solution to task 2 of day 10.
 pub fn day_10_2(data: &[String]) -> usize {
-    let (start, grid) = parse_grid(data);
-    let (next1, _) = get_start_pos(start, &grid);
+    let (start, mut grid) = parse_grid(data);
+    let (s, next1, _) = get_start_pos(start, &grid);
+    grid[start.1][start.0] = s;
     let mut contour = [start].into_iter().collect::<HS<_>>();
     let mut contour_v = vec![];
     let mut current = next1;
@@ -139,25 +148,24 @@ pub fn day_10_2(data: &[String]) -> usize {
         };
     }
 
-    let mut count = 0;
-    for y in 0..grid.len() {
+    grid.iter().enumerate().fold(0, |mut count, (y, _)| {
         for x in 0..grid[y].len() {
             if contour.contains(&(x, y)) {
                 continue;
             }
             if (x + 1..grid[y].len())
-                .filter(|xx| contour.contains(&(*xx, y)))
+                .filter(|xx| {
+                    contour.contains(&(*xx, y)) && ['S', 'L', 'J', '|'].contains(&grid[y][*xx])
+                })
                 .count()
                 % 2
                 == 1
-                && (0..x).any(|xx| contour.contains(&(xx, y)))
             {
                 count += 1;
             }
         }
-    }
-
-    count
+        count
+    })
 }
 
 #[cfg(test)]
@@ -205,19 +213,19 @@ mod tests {
         ];
         assert_eq!(day_10_2(&data), 8);
 
-        //let data = [
-        //"....................".to_string(),
-        //"FF7FSF7F7F7F7F7F---7".to_string(),
-        //"L|LJ||||||||||||F--J".to_string(),
-        //"FL-7LJLJ||||||LJL-77".to_string(),
-        //"F--JF--7||LJLJ7F7FJ-".to_string(),
-        //"L---JF-JLJ.||-FJLJJ7".to_string(),
-        //"|F|F-JF---7F7-L7L|7|".to_string(),
-        //"|FFJF7L7F-JF7|JL---7".to_string(),
-        //"7-L-JL7||F7|L7F-7F7|".to_string(),
-        //"L.L7LFJ|||||FJL7||LJ".to_string(),
-        //"L7JLJL-JLJLJL--JLJ.L".to_string(),
-        //];
-        //assert_eq!(day_10_2(&data), 10);
+        let data = [
+            "....................".to_string(),
+            "FF7FSF7F7F7F7F7F---7".to_string(),
+            "L|LJ||||||||||||F--J".to_string(),
+            "FL-7LJLJ||||||LJL-77".to_string(),
+            "F--JF--7||LJLJ7F7FJ-".to_string(),
+            "L---JF-JLJ.||-FJLJJ7".to_string(),
+            "|F|F-JF---7F7-L7L|7|".to_string(),
+            "|FFJF7L7F-JF7|JL---7".to_string(),
+            "7-L-JL7||F7|L7F-7F7|".to_string(),
+            "L.L7LFJ|||||FJL7||LJ".to_string(),
+            "L7JLJL-JLJLJL--JLJ.L".to_string(),
+        ];
+        assert_eq!(day_10_2(&data), 10);
     }
 }
