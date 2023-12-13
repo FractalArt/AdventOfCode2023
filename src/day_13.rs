@@ -1,13 +1,10 @@
 //! # Advent of Code 2023 - Day 13
 //!
 //! This module contains the solution of the [thirteenth day's challenges](https://adventofcode.com/2023/day/13).
-//type Pattern = Vec<Vec<char>>;
-use ndarray::{Array, Axis, Ix2};
-type Pattern = Array<char, Ix2>;
+use ndarray::{Array, Axis as Ax, Ix2};
 
-fn parse_patterns(data: &[String]) -> Vec<Pattern> {
-    let patterns = data
-        .iter()
+fn parse_patterns(data: &[String]) -> Vec<Array<char, Ix2>> {
+    data.iter()
         .chain([&"".to_string()])
         .map(|l| l.trim())
         .fold((vec![], vec![]), |(mut curr, mut patterns), l| {
@@ -19,55 +16,37 @@ fn parse_patterns(data: &[String]) -> Vec<Pattern> {
                 (curr, patterns)
             }
         })
-        .1;
-    let v: Vec<Array<char, Ix2>> = patterns
-        .clone()
+        .1
         .into_iter()
         .map(|pattern| {
-            let y = pattern.len();
-            let x = pattern[0].len();
-            let iter = pattern.into_iter().flat_map(|line| line.into_iter());
+            let (y, x) = (pattern.len(), pattern[0].len());
+            let iter = pattern.into_iter().flat_map(|p| p.into_iter());
             Array::from_iter(iter).into_shape((y, x)).unwrap()
         })
-        .collect();
-    v
+        .collect()
 }
 
-pub fn find_horizontal(pattern: &Array<char, Ix2>) -> usize {
+fn symmetry_axis(pattern: &Array<char, Ix2>) -> usize {
     pattern
         .axis_iter(ndarray::Axis(0))
         .enumerate()
         .filter(|(idx, _)| *idx < pattern.nrows() - 1)
-        .filter(|(idx, row)| row == pattern.index_axis(Axis(0), idx + 1))
+        .filter(|(idx, row)| row == pattern.index_axis(Ax(0), idx + 1))
         .filter(|(idx, _)| {
-            for r in 1..=std::cmp::min(*idx, pattern.nrows() - idx - 2) {
-                if pattern.index_axis(Axis(0), idx - r) != pattern.index_axis(Axis(0), idx + 1 + r)
-                {
-                    return false;
-                }
-            }
-            true
+            (1..=std::cmp::min(*idx, pattern.nrows() - idx - 2)).all(|r| {
+                pattern.index_axis(Ax(0), idx - r) == pattern.index_axis(Ax(0), idx + 1 + r)
+            })
         })
         .map(|(idx, _)| idx + 1)
         .next()
         .unwrap_or(0)
 }
 
-/// The solution to tasks 1 of day 13.
+/// The solution to task 1 of day 13.
 pub fn day_13_1(data: &[String]) -> usize {
-    let patterns = parse_patterns(data);
-
-    patterns
+    parse_patterns(data)
         .into_iter()
-        .map(|p| {
-            let horizontal = find_horizontal(&p);
-            println!("Horizontal: {}", horizontal);
-            let transposed = p.permuted_axes([1, 0]);
-            println!("Transposed:\n{:?}", transposed);
-            let vertical = find_horizontal(&transposed);
-            println!("Vertical: {}", vertical);
-            100 * horizontal + vertical
-        })
+        .map(|p| 100 * symmetry_axis(&p) + symmetry_axis(&p.permuted_axes([1, 0])))
         .sum()
 }
 
