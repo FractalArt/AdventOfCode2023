@@ -70,4 +70,23 @@ fn main() {
         "[Day 11 - Task 2]: {}",
         aoc2023::day_11::day_11(&data_11, 1_000_000)
     );
+
+    let data_13 = [
+        "#.##..##.".to_string(),
+        "..#.##.#.".to_string(),
+        "##......#".to_string(),
+        "##......#".to_string(),
+        "..#.##.#.".to_string(),
+        "..##..##.".to_string(),
+        "#.#.##.#.".to_string(),
+        "".to_string(),
+        "#...##..#".to_string(),
+        "#....#..#".to_string(),
+        "..##..###".to_string(),
+        "#####.##.".to_string(),
+        "#####.##.".to_string(),
+        "..##..###".to_string(),
+        "#....#..#".to_string(),
+    ];
+    println!("[Day 13 - Task 1]: {}", aoc2023::day_13::day_13_1(&data_13));
 }
