@@ -73,16 +73,21 @@ fn main() {
 
     // day 12
     //let data_12 = read_data::<String, _>("data/day_12.txt").unwrap();
-    println!("[Day 12 - Task 1]: TODO"); //, aoc2023::day_12::day_12_1(&data_13));
-    println!("[Day 12 - Task 2]: TODO"); //, aoc2023::day_12::day_12_2(&data_13));
+    println!("[Day 12 - Task 1]: "); //, aoc2023::day_12::day_12_1(&data_13));
+    println!("[Day 12 - Task 2]: "); //, aoc2023::day_12::day_12_2(&data_13));
 
     // day 13
     let data_13 = read_data::<String, _>("data/day_13.txt").unwrap();
     println!("[Day 13 - Task 1]: {}", aoc2023::day_13::day_13_1(&data_13));
-    println!("[Day 13 - Task 2]: TODO"); //, aoc2023::day_13::day_13_1(&data_13));
+    println!("[Day 13 - Task 2]: "); //, aoc2023::day_13::day_13_1(&data_13));
 
     // day 14
     let data_14 = read_data::<String, _>("data/day_14.txt").unwrap();
     println!("[Day 14 - Task 1]: {}", aoc2023::day_14::day_14_1(&data_14));
-    println!("[Day 14 - Task 2]: TODO"); //, aoc2023::day_14::day_14_1(&data_14));
+    println!("[Day 14 - Task 2]: "); //, aoc2023::day_14::day_14_1(&data_14));
+
+    // day 15
+    let data_15 = std::fs::read_to_string("data/day_15.txt").unwrap();
+    println!("[Day 15 - Task 1]: {}", aoc2023::day_15::day_15_1(&data_15));
+    println!("[Day 14 - Task 2]: "); //, aoc2023::day_15::day_15_1(&data_15));
 }
